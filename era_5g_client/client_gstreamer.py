@@ -21,6 +21,8 @@ class NetAppClientGstreamer(NetAppClient):
         wait_for_netapp: bool = True,
         netapp_uri: Optional[str] = None,
         netapp_port: Optional[int] = None,
+        image_error_event: Optional[Callable] = None,
+        json_error_event: Optional[Callable] = None,
     ) -> None:
         """Constructor.
 
@@ -37,6 +39,10 @@ class NetAppClientGstreamer(NetAppClient):
             wait_for_netapp (bool, optional):
             netapp_uri (str, optional): The URI of the NetApp interface. Defaults to None.
             netapp_port (int, optional): The port of the NetApp interface. Defaults to None.
+            image_error_event (Callable, optional): Callback which is emited when server
+                failed to process the incoming image.
+            json_error_event (Callable, optional): Callback which is emited when server
+                failed to process the incoming json data.
         """
 
         super().__init__(
@@ -50,17 +56,21 @@ class NetAppClientGstreamer(NetAppClient):
             wait_for_netapp,
             netapp_uri,
             netapp_port,
+            image_error_event,
+            json_error_event,
         )
         # holds the gstreamer port
         self.gstreamer_port: Optional[int] = None
 
-    def register(self, args: Optional[Dict] = None) -> Response:
+    def register(self, ws_data: Optional[bool] = False, args: Optional[Dict] = None) -> Response:
         """Calls the /register endpoint of the NetApp interface and if the
         registration is successful, it sets up the websocket connection for
         results retrieval.
 
         Besides, it obtains the gstreamer port.
         Args:
+            ws_data (bool): indicates if a separate websocket channel
+                for data transport should be set
             args (Dict, optional): optional parameters to be passed to
                 the NetApp, in the form of dict. Defaults to None.
         Raises:
@@ -74,7 +84,7 @@ class NetAppClientGstreamer(NetAppClient):
             merged_args = {"gstreamer": True}
         else:
             merged_args = {**args, **{"gstreamer": True}}
-        response = super().register(merged_args)
+        response = super().register(ws_data, merged_args)
 
         # checks whether the NetApp responded with any data
         if len(response.content) > 0:

@@ -159,7 +159,7 @@ def main() -> None:
             resized = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_AREA)
             timestamp_str = str(timestamp)
             image_storage[timestamp_str] = resized
-            client.send_image(resized, timestamp_str, 5)
+            client.send_image_http(resized, timestamp_str, 5)
 
     except FailedToConnect as ex:
         print(f"Failed to connect to server ({ex})")
