@@ -65,10 +65,18 @@ def main() -> None:
         client = NetAppClientGstreamer(
             MIDDLEWARE_ADDRESS, MIDDLEWARE_USER, MIDDLEWARE_PASSWORD, MIDDLEWARE_TASK_ID, True, get_results, True, True
         )
+        if not client.netapp_host:
+            logging.error("The middleware did not provide NetApp's address")
+            client.disconnect()
+            return
+
         # register the client with the NetApp
         client.register()
-        assert client.netapp_host
-        assert client.gstreamer_port
+
+        if not client.gstreamer_port:
+            logging.error("The middleware did not provide port for GStreamer")
+            client.disconnect()
+            return
 
         if FROM_SOURCE:
             # creates a data sender which will pass images to the NetApp either from webcam ...
